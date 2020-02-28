@@ -1,0 +1,53 @@
+//Get token
+FirebaseInstanceId.getInstance().getInstanceId()
+        .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+            @Override
+            public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                if (!task.isSuccessful()) {
+                    Log.w(TAG, "getInstanceId failed", task.getException());
+                    return;
+                }
+
+                // Get new Instance ID token
+                String token = task.getResult().getToken();
+
+                // Log and toast
+                String msg = getString(R.string.msg_token_fmt, token);
+                Log.d(TAG, msg);
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+// The registration token may change when:
+// The app deletes Instance ID
+// The app is restored on a new device
+// The user uninstalls/reinstall the app
+// The user clears app data.
+
+postman
+
+post https://fcm.googleapis.com/fcm/send
+
+h1: Authorization: key=AAAAB1il8tg:APA91bHbAQVsNZbmE4O_lHicVyE6fX0RW25TjB79wIiNgm5y8sft65HSGDAKCuz3JW_9K8u9lyGR012Wx9oWiH5XkWgOYetVIE49wVMypXhnLJGueRbLrTndibTZjR0tfYGn0Xb0hgsp
+
+h2: Content-Type: application/json
+
+body raw json:
+
+{
+    "to": "fZY-AARZumU:APA91bGCLKOhlEs4xWol9V4eHq0Z94a045mNuXe9QgzQ1ALQ_0TqajbYcPj9oPV5PRFU_yJOIXFzmLhD8-vvcn2ZjGpehL_Nx_6tPreZ-8BdKD0TZxT99-aryXxm8S5VqMkh5_opVll7",
+    "collapse_key": "type_a",
+    "notification": {
+        "body": "Body of Your Notification",
+        "title": "Title of Your Notification"
+    },
+    "data": {
+        "body": "Body of Your Notification in Data",
+        "title": "Title of Your Notification in Title",
+        "key_1": "Value for key_1",
+        "key_2": "Value for key_2"
+    }
+}
+
+send without data
