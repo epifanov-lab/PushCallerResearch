@@ -7,12 +7,19 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.widget.RemoteViews;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.epifanovlab.pushcallerresearch.thrash.AudioPlayer;
+
+import static com.epifanovlab.pushcallerresearch.CallingActivity.CALL_ANSWER;
+import static com.epifanovlab.pushcallerresearch.CallingActivity.CALL_COMMAND_KEY;
+import static com.epifanovlab.pushcallerresearch.CallingActivity.CALL_DEFAULT;
+import static com.epifanovlab.pushcallerresearch.CallingActivity.CALL_DISMISS;
 
 /**
  * @author Konstantin Epifanov
@@ -31,31 +38,33 @@ public class ForegroundService extends Service {
   public int onStartCommand(Intent intent, int flags, int startId) {
     registerForegroundChannel(this);
 
-    PendingIntent fspIntent = PendingIntent.getActivity(this, 0,
-      new Intent(this, CallingActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+    RemoteViews remote = new RemoteViews(getPackageName(), R.layout.notification_call);
+    remote.setTextViewText(R.id.title, intent.getStringExtra("title"));
+    remote.setTextViewText(R.id.message, intent.getStringExtra("body"));
+
+    remote.setOnClickPendingIntent(R.id.dismiss, obtainIntent(this, CALL_DISMISS));
+    remote.setOnClickPendingIntent(R.id.answer, obtainIntent(this, CALL_ANSWER));
 
     Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+      .setCustomContentView(remote)
       .setSmallIcon(R.drawable.ic_launcher_foreground)
-      .setContentTitle(intent.getStringExtra("title"))
-      .setContentText(intent.getStringExtra("body"))
       .setPriority(NotificationCompat.PRIORITY_HIGH)
       .setCategory(NotificationCompat.CATEGORY_CALL)
-      .setFullScreenIntent(fspIntent, true)
+      .setFullScreenIntent(obtainIntent(this, CALL_DEFAULT), true)
       .build();
-
     startForeground(999, notification);
-    startAct();
+    Utils.startActivity(this, CallingActivity.class);
 
     audioPlayer.play(this, R.raw.jazz);
 
     return START_NOT_STICKY;
   }
 
-  void startAct() {
-    Intent intent = new Intent(this, CallingActivity.class);
-    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-    startActivity(intent);
+  static PendingIntent obtainIntent(Context context, int code) {
+    Intent intent = new Intent(context, CallingActivity.class);
+    Bundle bundle = new Bundle();
+    bundle.putInt(CALL_COMMAND_KEY, code);
+    return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT, bundle);
   }
 
   @Override
@@ -69,6 +78,7 @@ public class ForegroundService extends Service {
   public IBinder onBind(Intent intent) {
     return null;
   }
+
 
   static void registerForegroundChannel(Context context) {
     NotificationChannel serviceChannel = new NotificationChannel(CHANNEL_ID,

@@ -13,9 +13,15 @@ import com.google.firebase.iid.FirebaseInstanceId;
 
 public class CallingActivity extends AppCompatActivity {
 
+  public static final String CALL_COMMAND_KEY = "command";
+  public static final int CALL_DEFAULT = 0;
+  public static final int CALL_DISMISS = -1;
+  public static final int CALL_ANSWER = 1;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
       setShowWhenLocked(true);
       setTurnScreenOn(true);
@@ -27,14 +33,35 @@ public class CallingActivity extends AppCompatActivity {
         WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
     }
 
-    setContentView(R.layout.activity_main);
+    setContentView(R.layout.activity_caller);
 
-    findViewById(R.id.answer).setOnClickListener((v) -> {
-      stopService(new Intent(this, ForegroundService.class));
-      //finish();
-    });
+    findViewById(R.id.dismiss).setOnClickListener((v) -> dismiss());
+    findViewById(R.id.answer).setOnClickListener((v) -> answer());
 
     getFcmToken();
+  }
+
+  private void answer() {
+    Utils.startActivity(this, AnswerActivity.class);
+    dismiss();
+  }
+
+  private void dismiss() {
+    Utils.stopForegroundService(this);
+    finish();
+  }
+
+  @Override
+  protected void onNewIntent(Intent intent) {
+    System.out.println("onNewIntent: " + intent);
+      int command = intent.getIntExtra("command", CALL_DEFAULT);
+      System.out.println("onNewIntent: " + intent + " " + command);
+      switch (command) {
+        case CALL_ANSWER: answer(); break;
+        case CALL_DISMISS: dismiss(); break;
+        default: break;
+      }
+    super.onNewIntent(intent);
   }
 
   private void getFcmToken() {
