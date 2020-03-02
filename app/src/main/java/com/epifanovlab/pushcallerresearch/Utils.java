@@ -28,13 +28,4 @@ public class Utils {
     manager.createNotificationChannel(channel);
   }
 
-  static void registerForegroundChannel(Context context) {
-    NotificationChannel serviceChannel = new NotificationChannel(CHANNEL_ID,
-      "Foreground Service Channel",
-      NotificationManager.IMPORTANCE_DEFAULT
-    );
-    NotificationManager manager = context.getSystemService(NotificationManager.class);
-    manager.createNotificationChannel(serviceChannel);
-  }
-
 }

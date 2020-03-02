@@ -36,8 +36,7 @@ public class FcmService extends FirebaseMessagingService {
 
     if (message.getData().size() > 0) {
       System.out.println("Message data payload: " + message.getData());
-      // sendDataNotification(message.getData());
-      startForegroundService();
+      startForegroundService(message.getData());
     }
 
     if (message.getNotification() != null) {
@@ -51,31 +50,11 @@ public class FcmService extends FirebaseMessagingService {
     System.out.println("FcmService.onNewToken: " + s);
   }
 
-  private void sendDataNotification(@NonNull Map<String, String> data) {
-    Intent intent = new Intent(this, MainActivity.class);
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
-
-    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NotificationChannels.SPECIAL.channelId)
-      .setSmallIcon(R.mipmap.ic_launcher)
-      .setContentTitle(data.get("title"))
-      .setContentText(data.get("body"))
-      .setAutoCancel(true)
-      .setContentIntent(pendingIntent);
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      Utils.registerSpecialNotificationChannel(this);
-    }
-
-    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-    manager.notify(0, builder.build());
-  }
-
-  private void startForegroundService() {
+  private void startForegroundService(Map<String, String> data) {
     Intent serviceIntent = new Intent(this, ForegroundService.class);
-    serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android");
+    serviceIntent.putExtra("title", data.get("title"));
+    serviceIntent.putExtra("body", data.get("body"));
     ContextCompat.startForegroundService(this, serviceIntent);
   }
-
 
 }

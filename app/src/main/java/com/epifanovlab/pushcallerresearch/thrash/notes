@@ -51,3 +51,38 @@ body raw json:
 }
 
 send without data
+
+
+  private void sendDataNotification(@NonNull Map<String, String> data) {
+    Intent intent = new Intent(this, MainActivity.class);
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+
+    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NotificationChannels.SPECIAL.channelId)
+      .setSmallIcon(R.mipmap.ic_launcher)
+      .setContentTitle(data.get("title"))
+      .setContentText(data.get("body"))
+      .setAutoCancel(true)
+      .setContentIntent(pendingIntent);
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      Utils.registerSpecialNotificationChannel(this);
+    }
+
+    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+    manager.notify(0, builder.build());
+  }
+  \
+    void startAct() {
+      Intent intent = new Intent(this, CallingActivity.class);
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+      startActivity(intent);
+    }
+
+      /*  private void startForegroundService(Map<String, String> data) {
+        Intent serviceIntent = new Intent(this, ForegroundService.class);
+        serviceIntent.putExtra("title", data.get("title"));
+        serviceIntent.putExtra("body", data.get("body"));
+        ContextCompat.startForegroundService(this, serviceIntent);
+      }*/
